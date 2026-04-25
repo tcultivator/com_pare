@@ -9,7 +9,8 @@ import { FcGoogle } from "react-icons/fc"
 
 import { LuEyeClosed } from "react-icons/lu";
 import { LuEye } from "react-icons/lu";
-
+import Image from "next/image"
+import logo from "@/public/logo/logofull.png"
 export default function SignupPage() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -78,8 +79,11 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white sm:bg-background px-4">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-white sm:bg-background px-4">
             <div className="w-full max-w-md bg-white sm:rounded-2xl sm:shadow-lg p-8">
+                <div className="flex items-center justify-center mb-6">
+                    <Image src={logo} alt="Compare Logo" width={150} height={150} />
+                </div>
                 <h2 className="text-2xl text-black font-bold text-center mb-6">
                     Come join us!
                 </h2>

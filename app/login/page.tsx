@@ -8,6 +8,8 @@ import { FcGoogle } from "react-icons/fc"
 
 import { LuEyeClosed } from "react-icons/lu";
 import { LuEye } from "react-icons/lu";
+import Image from "next/image"
+import logo from "@/public/logo/logofull.png"
 export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -60,11 +62,9 @@ export default function LoginPage() {
 
                 {/* HEADER */}
                 <div className="text-center mb-6">
-                    {/* LOGO PLACEHOLDER */}
+                    
                     <div className="flex items-center justify-center mb-6">
-                        <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium">
-                            LOGO
-                        </div>
+                       <Image src={logo} alt="Compare Logo" width={150} height={150} />
                     </div>
                     <h1 className="text-3xl font-semibold">
                         Welcome Back

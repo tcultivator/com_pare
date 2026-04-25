@@ -1,82 +1,122 @@
 "use client"
-import React from 'react'
-import { useEffect, useState } from 'react'
-import { PulseLoader } from 'react-spinners'
-import { use } from 'react'
-import Link from 'next/link';
+import React, { useEffect, useState, use } from 'react'
+import Link from 'next/link'
+import { RefreshCw, CheckCircle2, XCircle } from "lucide-react"
+
 const AccountConfirmationComponent = ({
     searchParams,
 }: {
     searchParams: Promise<{ token?: string }>
 }) => {
     const [loading, setLoading] = useState(true)
-    const params = use(searchParams)
     const [error, setError] = useState(false)
+
+    const params = use(searchParams)
     const token = params.token
+
     useEffect(() => {
         setTimeout(() => {
-
             if (token) {
                 const confirmAccountCreation = async () => {
-                    const confirmAccount = await fetch('api/auth/signup/confirm', {
-                        method: 'POST',
-                        headers: {
-                            'Content-type': 'application/json'
-                        },
-                        body: JSON.stringify({ token: token })
+                    try {
+                        const confirmAccount = await fetch('api/auth/signup/confirm', {
+                            method: 'POST',
+                            headers: {
+                                'Content-type': 'application/json'
+                            },
+                            body: JSON.stringify({ token })
+                        })
 
-                    })
-                    const result = await confirmAccount.json()
-                    if (result.status == 200) {
-                        setLoading(false)
-                    } else {
+                        const result = await confirmAccount.json()
+
+                        if (result.status === 200) {
+                            setLoading(false)
+                        } else {
+                            setLoading(false)
+                            setError(true)
+                        }
+                    } catch {
                         setLoading(false)
                         setError(true)
-
                     }
                 }
+
                 confirmAccountCreation()
             } else {
                 setLoading(false)
                 setError(true)
-
             }
-        }, 1000);
+        }, 800)
+    }, [token])
 
-
-    }, [])
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-80 w-screen h-screen flex flex-col justify-center items-center z-50 text-white">
-            {loading ? (
-                <>
-                    <PulseLoader size={15} color="#ffffff" />
-                    <p className="mt-4 text-lg">Creating your account, please wait...</p>
-                </>
-            ) : error ? (
-                <div className="text-center">
-                    <h1 className="text-2xl font-semibold mb-4">❌ Invalid or Expired Token</h1>
-                    <p className="mb-2">The link you used is no longer valid or has expired.</p>
-                    <Link
-                        href="/login"
-                        className="inline-block mt-3 px-6 py-2 bg-white text-black rounded-md font-medium hover:bg-gray-200 transition"
-                    >
-                        Return to Sign In
-                    </Link>
-                </div>
-            ) : (
-                <div className="text-center">
-                    <h1 className="text-2xl font-semibold mb-4">🎉 Account Created Successfully!</h1>
-                    <p className="mb-2">You can now sign in with your credentials.</p>
-                    <Link
-                        href="/login"
-                        className="inline-block mt-3 px-6 py-2 bg-white text-black rounded-md font-medium hover:bg-gray-200 transition"
-                    >
-                        Go to Sign In
-                    </Link>
-                </div>
-            )}
-        </div>
+        <div className="min-h-[100dvh] bg-white sm:bg-background flex items-center justify-center px-4">
+            <div className="w-full max-w-sm bg-white sm:rounded-3xl sm:border border-gray-200 p-8 text-center">
 
+                {loading ? (
+                    <>
+                        <div className="flex justify-center">
+                            <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
+                        </div>
+
+                        <h2 className="mt-6 text-base font-semibold text-gray-900">
+                            Setting up your account
+                        </h2>
+
+                        <p className="text-sm text-gray-500 mt-1">
+                            Please wait…
+                        </p>
+                    </>
+                ) : error ? (
+                    <>
+                        <div className="flex justify-center">
+                            <div className="bg-red-50 p-3 rounded-full">
+                                <XCircle className="w-8 h-8 text-red-500" />
+                            </div>
+                        </div>
+
+                        <h1 className="text-base font-semibold text-gray-900 mt-5">
+                            Link Expired
+                        </h1>
+
+                        <p className="text-sm text-gray-500 mt-1">
+                            This confirmation link is no longer valid.
+                        </p>
+
+                        <Link
+                            href="/login"
+                            className="mt-6 block w-full py-2.5 rounded-xl bg-black text-white text-sm font-medium active:scale-[0.98] transition"
+                        >
+                            Sign In
+                        </Link>
+                    </>
+                ) : (
+                    <>
+                        <div className="flex justify-center">
+                            <div className="bg-green-50 p-3 rounded-full">
+                                <CheckCircle2 className="w-8 h-8 text-green-500" />
+                            </div>
+                        </div>
+
+                        <h1 className="text-base font-semibold text-gray-900 mt-5">
+                            Account Ready
+                        </h1>
+
+                        <p className="text-sm text-gray-500 mt-1">
+                            You can now sign in.
+                        </p>
+
+                        <Link
+                            href="/login"
+                            className="mt-6 block w-full py-2.5 rounded-xl bg-black text-white text-sm font-medium active:scale-[0.98] transition"
+                        >
+                            Continue
+                        </Link>
+                    </>
+                )}
+
+            </div>
+        </div>
     )
 }
 

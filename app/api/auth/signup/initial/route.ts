@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         const hashedPassword = await bcrypt.hash(body.password, 10)
         await db.query(insertQuery, [body.email, body.username, hashedPassword, defaultProfile, token])
         const data = await sendEmail({
-            to: body.email, subject: 'Confirm your account', html: `
+            to: body.email, sub: 'Confirm your account', message: `
             
            <div style="font-family: Arial, Helvetica, sans-serif; background-color: #f2f2f2; padding: 40px 20px;">
                 <table

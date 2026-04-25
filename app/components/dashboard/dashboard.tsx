@@ -106,7 +106,7 @@ export default function Dashboard() {
             </div>
 
             {/* PRODUCT GRID */}
-            <div className="max-w-7xl mx-auto px-3 mt-3 md:px-6 md:mt-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-10">
+            <div className="max-w-7xl mx-auto px-3 mt-3 md:px-6 md:mt-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 gap-2  md:pb-10">
                 {products.map((product) => (
                     <div
                         key={product.id}

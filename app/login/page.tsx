@@ -6,12 +6,20 @@ import Link from "next/link"
 import { RefreshCw } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
 
+import { LuEyeClosed } from "react-icons/lu";
+import { LuEye } from "react-icons/lu";
 export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [buttonLoading, setButtonLoading] = useState(false);
     const [error, setError] = useState("")
     const [success, setSuccess] = useState("")
+
+    const [showPassword, setShowPassword] = useState(false)
+
+    const seePassword = () => {
+        setShowPassword((prev) => !prev)
+    }
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setButtonLoading(true)
@@ -68,6 +76,7 @@ export default function LoginPage() {
 
                 {/* GOOGLE */}
                 <button
+                    tabIndex={-1}
                     onClick={() => signIn("google", { callbackUrl: "/" })}
                     className="
         w-full
@@ -120,16 +129,23 @@ export default function LoginPage() {
                         required
                     />
                     <label className="block text-sm font-medium mb-1 text-slate-600">Password <span className="text-red-400">*</span></label>
-                    <input
-                        type="password"
-                        placeholder="••••••••"
-                        className="w-full px-4 py-2 border border-black/30 text-sm text-black rounded-lg focus:ring-2 focus:ring-black outline-none"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                    <div className="relative">
+                        <input
+                            type={showPassword ? '' : "password"}
+                            placeholder="••••••••"
+                            className="w-full px-4 py-2 border border-black/30 text-sm text-black rounded-lg focus:ring-2 focus:ring-black outline-none"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <button tabIndex={-1} type="button" onClick={seePassword} className="absolute top-1/2 transform -translate-y-1/2 cursor-pointer right-2 p-1 text-gray-500">
+                            {showPassword ? <LuEye /> : <LuEyeClosed />}
+                        </button>
+                    </div>
+
                     {/* BUTTON */}
                     <button
+                        tabIndex={-1}
                         type="submit"
                         disabled={buttonLoading}
                         className="w-full mt-6 font-light bg-black text-sm text-white py-2 rounded-lg hover:bg-gray-800 transition flex items-center justify-center gap-2"

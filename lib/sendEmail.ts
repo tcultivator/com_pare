@@ -1,19 +1,29 @@
-import { MailerSend, EmailParams, Sender, Recipient } from "mailersend";
+import sgMail from "@sendgrid/mail";
 
-const mailerSend = new MailerSend({
-    apiKey: process.env.MAILERSEND_API_KEY!,
-});
+sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-export async function sendEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
-    const sentFrom = new Sender("MS_XGP5Vw@test-51ndgwv5vwdlzqx8.mlsender.net", "Com_Pare Team");
+export type SendMailProps = {
+    to: string;
+    sub: string;
+    message: string;
+};
 
-    const recipients = [new Recipient(to)];
 
-    const emailParams = new EmailParams()
-        .setFrom(sentFrom)
-        .setTo(recipients)
-        .setSubject(subject)
-        .setHtml(html);
+// sending email using send grid
+export async function sendEmail({ to, sub, message }: SendMailProps) {
+    try {
+        const msg = {
+            to,
+            from: process.env.NODEMAILER_USER!,
+            subject: sub,
+            html: message,
+        };
 
-    return await mailerSend.email.send(emailParams);
+        const [response] = await sgMail.send(msg);
+
+        console.log("Email sent:", response.statusCode);
+    } catch (error) {
+        console.error("Email send error:", error);
+        throw error;
+    }
 }

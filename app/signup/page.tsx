@@ -134,7 +134,7 @@ export default function SignupPage() {
                                 }}
                                 required
                             />
-                            <button type="button" onClick={seePassword} className="absolute top-1/2 transform -translate-y-1/2 cursor-pointer right-2 p-1 text-gray-500">
+                            <button tabIndex={-1} type="button" onClick={seePassword} className="absolute top-1/2 transform -translate-y-1/2 cursor-pointer right-2 p-1 text-gray-500">
                                 {showPassword ? <LuEye /> : <LuEyeClosed />}
                             </button>
 
@@ -157,7 +157,7 @@ export default function SignupPage() {
                                 }}
                                 required
                             />
-                            <button type="button" onClick={seeConfirmPassword} className="absolute top-1/2 transform -translate-y-1/2 cursor-pointer right-2 p-1 text-gray-500">
+                            <button tabIndex={-1} type="button" onClick={seeConfirmPassword} className="absolute top-1/2 transform -translate-y-1/2 cursor-pointer right-2 p-1 text-gray-500">
                                 {showConfirmPassword ? <LuEye /> : <LuEyeClosed />}
                             </button>
                         </div>
@@ -166,6 +166,7 @@ export default function SignupPage() {
                     {/* Button */}
                     <button
                         type="submit"
+                        tabIndex={-1}
                         disabled={buttonLoading}
                         className="w-full bg-black font-light text-white py-2 text-sm cursor-pointer rounded-lg hover:bg-gray-800 transition flex items-center justify-center gap-2"
                     >
@@ -187,6 +188,7 @@ export default function SignupPage() {
                 <div className="space-y-3">
 
                     <button
+                        tabIndex={-1}
                         onClick={() => signIn("google", { callbackUrl: "/" })}
                         className="
                             w-full

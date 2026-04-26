@@ -6,6 +6,7 @@ import { signupValidation } from "@/validation/signup/signupValidation";
 import { alertClasses } from "@/utils/alertNotificationTypes";
 import { RefreshCw } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
+import { RiCloseLargeLine } from "react-icons/ri";
 
 import { LuEyeClosed } from "react-icons/lu";
 import { LuEye } from "react-icons/lu";
@@ -80,7 +81,11 @@ export default function SignupPage() {
 
     return (
         <div className="min-h-[100dvh] flex items-center justify-center bg-white sm:bg-background px-4">
-            <div className="w-full max-w-md bg-white sm:rounded-2xl sm:shadow-lg p-8">
+            <div className="w-full max-w-md bg-white relative sm:rounded-2xl sm:shadow-lg p-8">
+                {/* close button */}
+                <Link href="/" className="absolute top-6 right-4 text-gray-500 hover:text-gray-700">
+                    <RiCloseLargeLine size={15} />
+                </Link>
                 <div className="flex items-center justify-center mb-6">
                     <Image src={logo} alt="Compare Logo" width={150} height={150} />
                 </div>

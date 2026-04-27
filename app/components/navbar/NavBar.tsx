@@ -18,11 +18,11 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+} from "@/app/components/ui/navigation-menu"
 import { RiSearch2Line } from "react-icons/ri";
 
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger } from "@/app/components/ui/sheet"
 import { Menu } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar'
@@ -133,9 +133,9 @@ export default function Navbar() {
                     {/* USER (UNCHANGED) */}
                     {session ? (
                         <div className='flex items-center gap-2'>
-                            <button className='px-4 py-2 text-sm font-medium bg-black text-white rounded-md hover:bg-gray-800 transition cursor-pointer'>
+                            <Link href="/contribute" className='px-4 py-2 text-sm font-medium bg-black text-white rounded-md hover:bg-gray-800 transition cursor-pointer'>
                                 Contribute
-                            </button>
+                            </Link>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <button className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-100 rounded-md">

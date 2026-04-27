@@ -57,7 +57,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-[100dvh] flex items-center justify-center bg-white sm:bg-background px-4 py-6">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-red-400 sm:bg-background px-4 py-6 absolute z-50 w-full ">
             <div className="w-full max-w-md bg-white relative sm:rounded-2xl sm:shadow-lg p-8 mt-[-50px] sm:mt-0">
                 {/* close button */}
                 <Link href="/" className="absolute top-6 right-4 text-gray-500 hover:text-gray-700">

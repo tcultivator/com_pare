@@ -186,14 +186,9 @@ export function UploaderProvider<TOptions = unknown>({
     const [pendingAutoUploadKeys, setPendingAutoUploadKeys] = React.useState<
         string[] | null
     >(null);
+    
 
-    // Sync with external value if provided
-    React.useEffect(() => {
-        if (externalValue) {
-            setFileStates(externalValue);
-        }
-    }, [externalValue]);
-
+  
     const updateFileState = React.useCallback(
         (key: string, changes: Partial<FileState>) => {
             setFileStates((prevStates) => {

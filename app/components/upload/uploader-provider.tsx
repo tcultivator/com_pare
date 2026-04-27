@@ -361,8 +361,9 @@ export function UploaderProvider<TOptions = unknown>({
     // Handle auto-uploading files added to the queue
     React.useEffect(() => {
         if (pendingAutoUploadKeys && pendingAutoUploadKeys.length > 0) {
-            void uploadFiles(pendingAutoUploadKeys);
-            setPendingAutoUploadKeys(null);
+            void uploadFiles(pendingAutoUploadKeys).finally(() => {
+                setPendingAutoUploadKeys(null);
+            });
         }
     }, [pendingAutoUploadKeys, uploadFiles]);
 

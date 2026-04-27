@@ -40,15 +40,20 @@ export async function POST(req: Request) {
             message: 'Product inserted successfully',
             result,
         });
-    } catch (error: any) {
-        console.error(error);
+    } catch (error: unknown) {
+    console.error(error);
 
-        return Response.json(
-            {
-                success: false,
-                message: error.message || 'Something went wrong',
-            },
-            { status: 500 }
-        );
-    }
+    const message =
+        error instanceof Error
+            ? error.message
+            : 'Something went wrong';
+
+    return Response.json(
+        {
+            success: false,
+            message,
+        },
+        { status: 500 }
+    );
+}
 }

@@ -31,8 +31,20 @@ import Link from 'next/link'
 import Image from 'next/image'
 import logo from "@/public/logo/logo-other.png"
 import logo1 from "@/public/logo/logo1.png"
+import { useState, useEffect } from 'react';
 export default function Navbar() {
     const { data: session } = useSession()
+    const [categories, setCategories] = useState<{ category_name: string }[]>([])
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch('/api/categories')
+                const data = await res.json()
+                setCategories(data.data || [])
+            } catch { console.error("Failed to fetch categories") }
+        }
+        fetchCategories()
+    }, [])
 
     return (
         <nav className="w-full border-b bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
@@ -65,10 +77,12 @@ export default function Navbar() {
                                             <div className="space-y-2">
                                                 <div className="font-medium">Category</div>
                                                 <div className="text-sm space-y-1 pl-2">
-                                                    <div>Category1</div>
-                                                    <div>Category2</div>
-                                                    <div>Category3</div>
-                                                    <div>Category4</div>
+                                                    {categories.map((cat) => (
+                                                        <div key={cat.category_name} className="hover:bg-gray-100 rounded px-2 py-1">
+                                                            {cat.category_name}
+                                                        </div>
+                                                    ))}
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -90,18 +104,12 @@ export default function Navbar() {
                                 <NavigationMenuItem>
                                     <NavigationMenuTrigger>Category</NavigationMenuTrigger>
                                     <NavigationMenuContent className="p-2 space-y-1 min-w-[180px]">
-                                        <NavigationMenuLink className="block px-3 py-1 hover:bg-gray-100 rounded">
-                                            Category1
-                                        </NavigationMenuLink>
-                                        <NavigationMenuLink className="block px-3 py-1 hover:bg-gray-100 rounded">
-                                            Category2
-                                        </NavigationMenuLink>
-                                        <NavigationMenuLink className="block px-3 py-1 hover:bg-gray-100 rounded">
-                                            Category3
-                                        </NavigationMenuLink>
-                                        <NavigationMenuLink className="block px-3 py-1 hover:bg-gray-100 rounded">
-                                            Category4
-                                        </NavigationMenuLink>
+                                        {categories.map((cat) => (
+                                            <NavigationMenuLink key={cat.category_name} className="block px-3 py-1 hover:bg-gray-100 rounded">
+                                                {cat.category_name}
+                                            </NavigationMenuLink>
+                                        ))}
+                                        
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
                             </NavigationMenuList>

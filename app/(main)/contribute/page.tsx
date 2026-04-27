@@ -1,5 +1,5 @@
 'use client'
-
+import { signOut, useSession } from 'next-auth/react'
 import React, { useState, useCallback, useEffect } from 'react'
 import { Input } from '@/app/components/ui/input'
 import { Textarea } from '@/app/components/ui/textarea'
@@ -21,7 +21,7 @@ import {
   MapPin, Package, DollarSign, FileText, CheckCircle2,
   Store, LayoutGrid, Map as MapIcon, X, ArrowRight, Sparkles, Camera,
 } from 'lucide-react'
-
+import { toast } from "sonner"
 const MapSelector = dynamic(
   () => import('@/app/components/map/MapSelector'),
   {
@@ -56,12 +56,16 @@ export default function ContributePage() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [isMapOpen, setIsMapOpen] = useState(false)
   const [categories, setCategories] = useState<{ category_name: string }[]>([])
+  const [buttonLoading, setButtonLoading] = useState(false)
   const [addedProducts, setAddedProducts] = useState({
     product_name: '',
     product_image: 'https://www.mentainstruments.com/wp-content/uploads/2022/09/Getimage.png',
     price: 0,
     category: '',
     description: '',
+    store_name: '',
+    lat: '15.4479725',
+    long: '120.9394791',
   })
 
   useEffect(() => {
@@ -89,6 +93,58 @@ export default function ContributePage() {
     },
     [edgestore],
   )
+  const { data: session } = useSession()
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!coords) {
+      toast.error("Please pin the store location on the map.")
+      return
+    }
+
+    if (!session) {
+      toast.error("You must be logged in to contribute.")
+      return
+    }
+
+    try {
+      setButtonLoading(true)
+
+      const promise = fetch('/api/contribute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ addedProducts, session }),
+      })
+
+      toast.promise(promise, {
+        loading: "Publishing product...",
+        success: "Product published 🎉",
+        error: "Failed to publish product",
+      })
+
+      const res = await promise
+      if (!res.ok) throw new Error()
+
+      // optional reset
+      setAddedProducts({
+        product_name: '',
+        product_image: 'https://www.mentainstruments.com/wp-content/uploads/2022/09/Getimage.png',
+        price: 0,
+        category: '',
+        description: 'no desc',
+        store_name: '',
+        lat: '15.4479725',
+        long: '120.9394791',
+      })
+      setCoords(null)
+
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setButtonLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-[100dvh] bg-[#f7f7f9] font-[system-ui] flex flex-col">
@@ -127,7 +183,7 @@ export default function ContributePage() {
 
           {/* Form card */}
           <main className="flex-1 min-w-0">
-            <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
+            <form onSubmit={handleFormSubmit} className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
 
               {/* Card header */}
               <div className="px-6 py-5 border-b border-zinc-100 flex items-center justify-between">
@@ -154,8 +210,9 @@ export default function ContributePage() {
                         <Camera size={12} className="text-white" />
                       </div>
                     </div>
+
                     <div className="flex-1">
-                      <p className="text-[10px] font-bold text-zinc-500 tracking-widest uppercase mb-2">Product Photo</p>
+
                       <UploaderProvider uploadFn={uploadFn} autoUpload>
                         <Dropzone
                           dropzoneOptions={{ maxFiles: 1, maxSize: 1024 * 1024 * 4, accept: { 'image/*': ['.jpeg', '.jpg', '.png'] } }}
@@ -202,13 +259,13 @@ export default function ContributePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                   <div className="sm:col-span-2">
                     <FieldLabel icon={Package} text="Product Name" />
-                    <Input placeholder="e.g. Organic Turmeric Powder 500g" className={inputCls} required />
+                    <Input placeholder="e.g. Organic Turmeric Powder 500g" value={addedProducts.product_name} onChange={(e) => setAddedProducts(p => ({ ...p, product_name: e.target.value }))} className={inputCls} required />
                   </div>
                   <div>
                     <FieldLabel icon={DollarSign} text="Price" />
                     <div className="relative">
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-sm font-semibold pointer-events-none">₱</span>
-                      <Input type="number" placeholder="0.00" className={`${inputCls} pl-8`} required />
+                      <Input type="number" placeholder="0.00" value={addedProducts.price || ''} onChange={(e) => setAddedProducts(p => ({ ...p, price: Number(e.target.value) }))} className={`${inputCls} pl-8`} required />
                     </div>
                   </div>
                   <div>
@@ -226,24 +283,25 @@ export default function ContributePage() {
                   </div>
                   <div className="sm:col-span-2">
                     <FieldLabel icon={Store} text="Store Name" />
-                    <Input placeholder="e.g. Fresh Mart Poblacion" className={inputCls} required />
+                    <Input placeholder="e.g. Fresh Mart Poblacion" value={addedProducts.store_name} onChange={(e) => setAddedProducts(p => ({ ...p, store_name: e.target.value }))} className={inputCls} required />
                   </div>
+
                   <div className="sm:col-span-2">
                     <FieldLabel icon={FileText} text="Additional Details" />
-                    <Textarea placeholder="Size, weight, availability, brand, or any extra notes…"
+                    <Textarea value={addedProducts.description} onChange={(e) => setAddedProducts(p => ({ ...p, description: e.target.value }))} placeholder="Size, weight, availability, brand, or any extra notes…"
                       className={`${inputCls} min-h-[110px] resize-none pt-3`} />
                   </div>
                 </div>
 
                 {/* Submit */}
                 <div className="pt-2">
-                  <button type="submit" disabled={loading || !coords}
+                  <button type="submit" disabled={buttonLoading || !coords}
                     className={`w-full h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all
-                      ${(!loading && coords)
+                      ${(!buttonLoading && coords)
                         ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-200 hover:brightness-105 active:scale-[0.98]'
                         : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
                       }`}>
-                    {loading ? (
+                    {buttonLoading ? (
                       <>
                         <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -263,7 +321,7 @@ export default function ContributePage() {
                 </div>
 
               </div>
-            </div>
+            </form>
           </main>
 
         </div>

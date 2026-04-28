@@ -276,7 +276,7 @@ export default function ContributePage() {
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-zinc-200 shadow-lg">
                         {categories.map((val, idx) => (
-                          <SelectItem key={idx} value={val.category_name} className="text-sm">{val.category_name}</SelectItem>
+                          <SelectItem key={idx} value={val.category_name} className="text-sm">{val.category_name.toUpperCase().replace('_', ' ')}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

@@ -12,7 +12,8 @@ export async function POST(req: Request) {
             description,
             lat,
             long,
-            store_name
+            store_name,
+            location
         } = body.addedProducts;
         const {
             email
@@ -20,8 +21,8 @@ export async function POST(req: Request) {
 
         const [result] = await db.execute(
             `INSERT INTO products_info 
-      (product_name, product_image, description, price, contributor_email, product_lat, product_long,category,store_name)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (product_name, product_image, description, price, contributor_email, product_lat, product_long,category,store_name,store_location)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
             [
                 product_name,
                 product_image,
@@ -31,7 +32,8 @@ export async function POST(req: Request) {
                 lat,
                 long,
                 category,
-                store_name
+                store_name,
+                location
             ]
         );
 

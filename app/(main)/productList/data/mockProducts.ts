@@ -12,6 +12,8 @@ export type Product = {
   who_reported:string;
   reportStatus:string;
   reportReason:string;
+  plat:string;
+  plong:string;
 };
 
 export type FilterOptions = {

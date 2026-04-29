@@ -21,6 +21,8 @@ export async function GET(req: Request) {
     p.description,
     p.created_at,
     p.store_name AS storeName,
+    p.product_lat AS plat,
+    p.product_long AS plong,
 
     u.username AS user,
     u.profile_image AS userImage,

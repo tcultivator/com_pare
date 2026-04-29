@@ -26,6 +26,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [showReason, setShowReason] = useState(false);
   const [reason, setReason] = useState("");
   const { data: session } = useSession()
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async () => {
     if (!reason.trim()) {
       toast.error("Please provide a reason.");
@@ -36,6 +38,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       toast.error("You must be logged in to report a product.");
       return;
     }
+
+    setLoading(true);
 
     try {
       const promise = fetch("/api/submit_report", {
@@ -48,24 +52,32 @@ export default function ProductCard({ product }: ProductCardProps) {
           reason,
           name: session.user?.name,
         }),
+      }).then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed");
+        return data;
       });
 
       toast.promise(promise, {
         loading: "Submitting report...",
         success: "Report submitted successfully!",
-        error: "Failed to submit report",
+        error: (err) => err.message,
       });
 
-      const res = await promise;
-      if (!res.ok) throw new Error();
+      await promise;
+
+      // ✅ update UI
 
       setReason("");
 
-      // optional: update UI instantly
-      product.reportStatus = "pending";
-
+      // ✅ AUTO CLOSE on success
+      setOpen(false);
+      setLoading(false);
     } catch (err) {
       console.error(err);
+
+      // ❗ optional: also close on error
+      // setOpen(false);
     }
   };
   return (
@@ -120,9 +132,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Report button (DISABLED if reported) */}
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <button
+              onClick={() => setOpen(true)}
               disabled={!!product.reportStatus}
               className={`absolute top-3 right-3 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center transition-transform z-10 ${product.reportStatus
                 ? "opacity-40 cursor-not-allowed"
@@ -149,13 +162,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button className="cursor-pointer px-2 py-1" variant="ghost" onClick={() => setReason("")}>
+                <Button disabled={loading} className="cursor-pointer px-2 py-1" variant="ghost" onClick={() => setReason("")}>
                   Cancel
                 </Button>
               </DialogClose>
 
-              <Button className="cursor-pointer px-2 py-1" onClick={handleSubmit}>
-                Submit Report
+              <Button className="cursor-pointer px-2 py-1" onClick={handleSubmit} disabled={loading}>
+                {loading ? "Submitting..." : "Submit Report"}
               </Button>
             </DialogFooter>
           </DialogContent>

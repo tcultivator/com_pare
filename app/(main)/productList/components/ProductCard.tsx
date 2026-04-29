@@ -5,21 +5,88 @@ import { BsShop } from "react-icons/bs";
 import { MdOutlineBugReport } from "react-icons/md";
 import { Product } from "../data/mockProducts";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from "../../../components/ui/dialog";
+import { Button } from "../../../components/ui/button";
+import { Textarea } from "../../../components/ui/textarea";
 
+import { toast } from "sonner"
 type ProductCardProps = {
   product: Product;
 };
-
+import { signOut, useSession } from 'next-auth/react'
 export default function ProductCard({ product }: ProductCardProps) {
   const [showReason, setShowReason] = useState(false);
+  const [reason, setReason] = useState("");
+  const { data: session } = useSession()
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async () => {
+    if (!reason.trim()) {
+      toast.error("Please provide a reason.");
+      return;
+    }
 
+    if (!session) {
+      toast.error("You must be logged in to report a product.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const promise = fetch("/api/submit_report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          reason,
+          name: session.user?.name,
+        }),
+      }).then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed");
+        return data;
+      });
+
+      toast.promise(promise, {
+        loading: "Submitting report...",
+        success: "Report submitted successfully!",
+        error: (err) => err.message,
+      });
+
+      await promise;
+
+      // ✅ update UI
+
+      setReason("");
+
+      // ✅ AUTO CLOSE on success
+      setOpen(false);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+
+      // ❗ optional: also close on error
+      // setOpen(false);
+    }
+  };
   return (
     <div
-      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden group transition-all duration-200 flex flex-col h-full ${product.reportStatus=='done'
+      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden group transition-all duration-200 flex flex-col h-full ${product.reportStatus == 'done'
         ? "opacity-70 border-red-200"
         : "hover:shadow-lg hover:-translate-y-0.5"
-        } ${product.reportStatus?
-                             " border-red-200":'border-slate-200'}`}
+        } ${product.reportStatus ?
+          " border-red-200" : 'border-slate-200'}`}
     >
       {/* Image */}
       <div className="relative bg-gray-50 h-52 flex items-center justify-center">
@@ -65,20 +132,47 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Report button (DISABLED if reported) */}
-        <button
-          onClick={() => {
-            if (product.reportStatus) return;
-            console.log("Report product:", product.id);
-          }}
-          disabled={!!product.reportStatus}
-          className={`absolute  top-3 right-3 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center transition-transform z-10 ${product.reportStatus
-            ? "opacity-40 cursor-not-allowed"
-            : "hover:scale-110 cursor-pointer"
-            }`}
-          title="Report item"
-        >
-          <MdOutlineBugReport />
-        </button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <button
+              onClick={() => setOpen(true)}
+              disabled={!!product.reportStatus}
+              className={`absolute top-3 right-3 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center transition-transform z-10 ${product.reportStatus
+                ? "opacity-40 cursor-not-allowed"
+                : "hover:scale-110 cursor-pointer"
+                }`}
+              title="Report item"
+            >
+              <MdOutlineBugReport />
+            </button>
+          </DialogTrigger>
+
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Report this product</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              <Textarea
+                placeholder="Enter your reason for reporting..."
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </div>
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button disabled={loading} className="cursor-pointer px-2 py-1" variant="ghost" onClick={() => setReason("")}>
+                  Cancel
+                </Button>
+              </DialogClose>
+
+              <Button className="cursor-pointer px-2 py-1" onClick={handleSubmit} disabled={loading}>
+                {loading ? "Submitting..." : "Submit Report"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <img
           src={product.image}
@@ -132,8 +226,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           {/* View Button */}
           <button
-            disabled={product.reportStatus=='done'}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition-colors ${product.reportStatus=='done'
+            disabled={product.reportStatus == 'done'}
+            className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition-colors ${product.reportStatus == 'done'
               ? "border-gray-200 text-gray-400 cursor-not-allowed"
               : "border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer"
               }`}
@@ -143,8 +237,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           {/* Compare Button */}
           <button
-            disabled={product.reportStatus=='done'}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-colors ${product.reportStatus=='done'
+            disabled={product.reportStatus == 'done'}
+            className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-colors ${product.reportStatus == 'done'
               ? "bg-gray-200 text-gray-400 cursor-not-allowed"
               : "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
               }`}

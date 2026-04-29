@@ -21,6 +21,7 @@ import { Button } from "../../../components/ui/button";
 import { Textarea } from "../../../components/ui/textarea";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation"; // ← added
 
 type ProductCardProps = {
   product: Product;
@@ -30,12 +31,31 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [showReason, setShowReason] = useState(false);
   const [reason, setReason] = useState("");
   const { data: session } = useSession();
+  const router = useRouter(); // ← added
 
   const [open, setOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
-  const [mapOpen, setMapOpen] = useState(false);   // mobile map modal
+  const [mapOpen, setMapOpen] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // ── navigate to compare page ──────────────────────────────────────────────
+  const handleCompare = () => {
+    const params = new URLSearchParams({
+      id:          String(product.id),
+      name:        product.name,
+      price:       String(product.price),
+      image:       product.image,
+      category:    product.category,
+      storeName:   product.storeName,
+      location:    product.location,
+      description: product.description ?? "",
+      plat:        product.plat ?? "",
+      plong:       product.plong ?? "",
+    });
+    router.push(`/compare?${params.toString()}`);
+  };
+  // ─────────────────────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
     if (!reason.trim()) { toast.error("Please provide a reason."); return; }
@@ -70,7 +90,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isDone = product.reportStatus === "done";
 
   const mapSrc = `https://www.google.com/maps?saddr=15.448659,120.940740&daddr=${product.plat},${product.plong}&z=18&output=embed`;
-
 
   return (
     <div
@@ -116,7 +135,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <DialogContent className="sm:max-w-md">
             <div className="px-1 pt-1">
               <h2 className="text-base font-semibold text-gray-900 mb-1">Report this product</h2>
-              <p className="text-xs text-gray-400 mb-3">Let us know what&apos;ss wrong with this listing.</p>
+              <p className="text-xs text-gray-400 mb-3">Let us know what&apos;s wrong with this listing.</p>
             </div>
             <Textarea
               placeholder="Enter your reason for reporting..."
@@ -168,10 +187,6 @@ export default function ProductCard({ product }: ProductCardProps) {
               </button>
             </DialogTrigger>
 
-            {/* 
-              Desktop: max-w-4xl side-by-side layout
-              Mobile: full-screen, map hidden behind button
-            */}
             <DialogContent className="
               p-0 gap-0 overflow-hidden border-0
               w-screen h-[100dvh] max-w-none rounded-none
@@ -186,8 +201,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </DialogHeader>
               </div>
 
-
-              {/* ══ DESKTOP LAYOUT (sm and up) ══ */}
+                {/* ══ DESKTOP LAYOUT (sm and up) ══ */}
               <div className="hidden sm:flex flex-col h-full max-h-[90vh]">
 
                 {/* Header */}
@@ -209,11 +223,6 @@ export default function ProductCard({ product }: ProductCardProps) {
                         {product.category}
                       </span>
                     </div>
-                    {/* <DialogClose asChild>
-                      <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition shrink-0">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </DialogClose> */}
                   </div>
                 </div>
 
@@ -253,6 +262,20 @@ export default function ProductCard({ product }: ProductCardProps) {
                           )}
                         </div>
                       )}
+
+                      {/* ── Desktop Compare button inside modal ── */}
+                      <button
+                        onClick={handleCompare}
+                        disabled={isDone}
+                        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition
+                          ${isDone
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
+                          }`}
+                      >
+                        <MdCompareArrows className="w-4 h-4" />
+                        Compare Prices
+                      </button>
                     </div>
                   </div>
 
@@ -297,7 +320,6 @@ export default function ProductCard({ product }: ProductCardProps) {
                       <p className="text-[10px] text-gray-400 truncate">{product.user}</p>
                     </div>
                   </div>
-
                 </div>
 
                 {/* Product image */}
@@ -339,27 +361,28 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </div>
                   )}
 
-                  {/* View Map button — opens full-screen map modal on mobile */}
+                  {/* ── Mobile action buttons ── */}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setMapOpen(true)}
-                      className="w-full flex items-center justify-center gap-1 px-4 py-3 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition active:scale-95"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition active:scale-95"
                     >
-                      <span className="flex items-center gap-2">
-                        <Navigation className="w-4 h-4" />
-                        View on Map
-                      </span>
-                      <ChevronRight className="w-4 h-4 opacity-70" />
+                      <Navigation className="w-4 h-4" />
+                      View on Map
                     </button>
+
+                    {/* ── Mobile Compare button ── */}
                     <button
-                      onClick={() => setMapOpen(true)}
-                      className="w-full flex items-center justify-center gap-1 px-4 py-3 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition active:scale-95"
+                      onClick={handleCompare}
+                      disabled={isDone}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-semibold transition active:scale-95
+                        ${isDone
+                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                          : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
                     >
-                      <span className="flex items-center gap-2">
-                        <MdCompareArrows className="w-4 h-4" />
-                        Compare
-                      </span>
-                      <ChevronRight className="w-4 h-4 opacity-70" />
+                      <MdCompareArrows className="w-4 h-4" />
+                      Compare
                     </button>
                   </div>
 
@@ -400,11 +423,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             </DialogContent>
           </Dialog>
 
-          {/* COMPARE */}
+          {/* ── COMPARE button on card (desktop, outside modal) ── */}
           <button
+            onClick={handleCompare}
             disabled={isDone}
             className={`flex-1 py-2 text-xs font-semibold rounded-xl transition
-              ${isDone ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+              ${isDone
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
+              }`}
           >
             Compare
           </button>
